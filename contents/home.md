@@ -1,5 +1,7 @@
 
-[![bsalmankurt](https://img.shields.io/badge/bsalmankurt-github-blue)](https://github.com/bsalmankurt) [![bsalmankurt](https://img.shields.io/badge/bsalmankurt-LinkedIn-blue)](https://www.linkedin.com/in/bsalmankurt/) [![bsalmankurt](https://img.shields.io/badge/bsalmankurt-Google%20Scholar-navy)](https://scholar.google.com.tr/citations?user=1nuPeMUAAAAJ&hl=tr&oi=ao)
+[![bsalmankurt](https://img.shields.io/badge/bsalmankurt-github-blue)](https://github.com/bsalmankurt) [![bsalmankurt](https://img.shields.io/badge/bsalmankurt-LinkedIn-blue)](https://www.linkedin.com/in/bsalmankurt/) [![bsalmankurt](https://img.shields.io/badge/bsalmankurt-Google%20Scholar-navy)](https://scholar.google.com.tr/citations?user=1nuPeMUAAAAJ&hl=tr&oi=ao) [![bsalmankurt](https://img.shields.io/badge/bsalmankurt-Y%C3%96K_Akademik-cyan
+)](https://akademik.yok.gov.tr/AkademikArama/AkademisyenGorevOgrenimBilgileri?islem=direct&sira=_D2bDdARDMCOgjHVGzFVZw&authorId=DFA35AEFF1BCF452) 
+
 
 Şu anda Sakarya Uygulamalı Bilimler Üniversitesinde Dr. Öğretim Üyesi olarak görev almaktadır. 
 
