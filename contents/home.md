@@ -1,16 +1,19 @@
 
 
-[![senli1073](https://img.shields.io/badge/senli1073-github-blue?logo=github)](https://github.com/senli1073)
+[![bsalmankurt](https://img.shields.io/badge/senli1073-github-blue?logo=github)](https://github.com/bsalmankurt)
 
 Şu anda Sakarya Uygulamalı Bilimler Üniversitesinde Dr. Öğretim Üyesi olarak görev almaktadır. 
 
-#### Email
+#### E-posta
 bsalmankurt[at]gmail.com
 
-#### Education
-M.E., Computer Science and Technology, China University of Mining and Technology, 2022—2025 (expected).\
-B.E., Data Science and Big Data Technology, China University of Mining and Technology, 2018—2022.
+#### Eğitim
+Doktora-2: Kocaeli Üniversitesi, Teknoloji Fakültesi, Bilişim Sistemleri Mühendisliği Bölümü (2024-Devam ediyor)\
+Doktora-1: Sakarya Üniversitesi, Fen Edebiyat Fakültesi, Fizik Bölümü (2015-2021)\
+Y. Lisans-2: Kocaeli Üniversitesi, Teknoloji Fakültesi, Bilişim Sistemleri Mühendisliği Bölümü (2015-2019)\
+Y. Lisans-1: Sakarya Üniversitesi, Fen Edebiyat Fakültesi, Fizik Bölümü (2015-2019)\
+Lisans: Kırşehir Ahi Evran Üniversitesi, Fen Edebiyat Fakültesi, Fizik Bölümü (2008-2012)
 
-#### Research Interests
-Deep Learning, Artificial Intelligence Seismology, Mine Microseismic.
+#### Çalışma Alanları
+Hesaplamalı Nanobilim, Yoğunluk Fonksiyonel Kuramı, Nano biyoalgılayıcılar
 
