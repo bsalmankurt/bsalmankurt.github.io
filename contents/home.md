@@ -14,7 +14,7 @@ Y. Lisans-1: Sakarya Üniversitesi, Fen Edebiyat Fakültesi, Fizik Bölümü (20
 Lisans: Kırşehir Ahi Evran Üniversitesi, Fen Edebiyat Fakültesi, Fizik Bölümü (2008-2012)
 
 #### Çalışma Alanları
-Hesaplamalı Nanobilim, Yoğunluk Fonksiyonel Kuramı, Nano molekül-algılayıcılar
+Hesaplamalı Nanobilim, Yoğunluk Fonksiyonel Kuramı, Nano mertebede molekül-algılayıcılar
 
 #### Kullandığı Programlar
 Quantum Espresso, Siesta
