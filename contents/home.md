@@ -1,6 +1,6 @@
 
 
-[![bsalmankurt](https://img.shields.io/badge/senli1073-github-blue?logo=github)](https://github.com/bsalmankurt)
+[![bsalmankurt](https://img.shields.io/badge/bsalmankurt-github-blue](https://github.com/bsalmankurt)
 
 Şu anda Sakarya Uygulamalı Bilimler Üniversitesinde Dr. Öğretim Üyesi olarak görev almaktadır. 
 
