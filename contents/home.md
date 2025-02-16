@@ -15,3 +15,6 @@ Lisans: Kırşehir Ahi Evran Üniversitesi, Fen Edebiyat Fakültesi, Fizik Böl�
 
 #### Çalışma Alanları
 Hesaplamalı Nanobilim, Yoğunluk Fonksiyonel Kuramı, Nano molekül-algılayıcılar
+
+#### Kullandığı Programlar
+Quantum Espresso, Siesta
