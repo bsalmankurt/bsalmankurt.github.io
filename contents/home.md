@@ -1,5 +1,5 @@
 
-[![bsalmankurt](https://img.shields.io/badge/bsalmankurt-github-blue)](https://github.com/bsalmankurt)
+[![bsalmankurt](https://img.shields.io/badge/bsalmankurt-github-blue)](https://github.com/bsalmankurt) [![bsalmankurt](https://img.shields.io/badge/bsalmankurt-LinkedIn-blue)](https://www.linkedin.com/in/bsalmankurt/) [![bsalmankurt](https://img.shields.io/badge/bsalmankurt-Google%20Scholar-navy)](https://scholar.google.com.tr/citations?user=1nuPeMUAAAAJ&hl=tr&oi=ao)
 
 Şu anda Sakarya Uygulamalı Bilimler Üniversitesinde Dr. Öğretim Üyesi olarak görev almaktadır. 
 
