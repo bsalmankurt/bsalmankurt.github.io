@@ -1,12 +1,15 @@
-- <strong>S. Li</strong>, X. Yang*, A. Cao*, K. Fan, Y. Liu, C. Wang, and Q.Niu (2024). Label Noise-Robust Learning for Microseismic Arrival Time Picking. <strong>In Revision.</strong> [[Code]](https://github.com/senli1073/LNRL)
-
-- X. Yang, <strong>S. Li</strong>, A. Cao*, C. Wang*, Y. Liu, X. Bai, and Q. Niu (2024). Deep Transfer Learning for P-wave Arrival Identification and Automatic Seismic Source Location in Underground Mines. <strong>International Journal of Rock Mechanics and Mining Sciences</strong>. [[Paper]](https://doi.org/10.1016/j.ijrmms.2024.105888)
-
-- <strong>S. Li</strong>, X. Yang*, A. Cao*, C. Wang, Y. Liu, Y. Liu, and Q. Niu (2024). SeisT: A Foundational Deep-Learning Model for Earthquake Monitoring Tasks. <strong>IEEE Transactions on Geoscience and Remote Sensing</strong>. [[Paper]](https://doi.org/10.1109/TGRS.2024.3371503) [[Code]](https://github.com/senli1073/SeisT)
-
-- A. Cao, X. Yang, C. Wang*, <strong>S. Li</strong>, Y. Liu, L. Dou, and Q. Niu (2023). High-Precision Phase Picking and Automatic Source Locating Method for Seismicity in Mines Based on Deep Transfer Learning. <strong>Journal of China Coal Society</strong>. [[Paper]](https://doi.org/10.13225/j.cnki.jccs.2023.0095)
-
-- A. Cao, Y. Liu, X. Yang*, <strong>S. Li</strong>, C. Wang, X. Bai, and Y. Liu (2022). Physical Index and Data Fusion-Driven Method for Coal Burst Prediction in Time Sequence. <strong>Journal of China Coal Society</strong>. [[Paper]](https://doi.org/10.13225/j.cnki.jccs.2022.0680)
-
-- X. Yang, X. Yu, C. Zhang, <strong>S. Li</strong>, and Q. Niu (2021). MineGPS: Battery-Free Localization Base Station for Coal Mine Environment. <strong>IEEE Communications Letters</strong>. [[Paper]](https://doi.org/10.1109/LCOMM.2021.3081593)
+1. Salmankurt, B. Gürel, H. H.  “Ab initio calculations of DNA/RNA nucleobases with blue/black phosphorene for electronic sensing applications”. Bull Mater Sci 48, 26 (2025). https://doi.org/10.1007/s12034-024-03384-0 
+2. Yıldız, M., Kaltakçı Gürel, D., Salmankurt, B., Gürel, H. H.  “Exploring the Evolution of Nanotechnology Education: Insights from Bibliometric Analysis”. J. Chem. Educ. 2025, 102, 1, 253–269 (2025). [[Makale]](https://doi.org/10.1021/acs.jchemed.4c01120)
+3. Salmankurt, B.  “Ab-Initio calculations on Physical Properties of Dirac Semimetal AMgBi (A= K, Rb, Cs)”. Journal of Solid State Chemistry, 125000. (2024) https://doi.org/10.1016/j.jssc.2024.125000 
+4. Zhao, W., Haque, E., Guo, L., Cortie, D., Chen, L., Salmankurt, B., ... & Rule, K. C. “Phonon softening and electron-phonon coupling in the topological nodal-line semimetal ZrGeSe”. Physical Review Materials, 8(3), 034201 (2024). [[Makale]](https://doi.org/10.1103/PhysRevMaterials.8.034201)
+5. Salmankurt, B., Gürel, H. H., and Atalay, Y. “Ab-Initio study of dopamine, absorbic acid and uric acid adsorption on graphene and InBi monolayer with effects of charging and green’s function method”. Modern Physics Letters B, 2350094. (2023). https://doi.org/10.1142/S021798492350094X [[Makale]]()
+6. Salmankurt, B. “Density functional theory investigation on the structural, mechanical, lattice dynamical and thermal properties of nodal-line semimetals CaAgX (X: P, As)”. Bull Mater Sci 46, 81 (2023). [[Makale]](https://doi.org/10.1007/s12034-023-02918-2)
+7. Salmankurt, B. “The Structural, Mechanical, Lattice Dynamical, and Thermal Properties of 3D Dirac Semimetals BaXBi (X= Cu, Ag, Au) from First‐Principles Calculations”. Physica Status Solidi (b), 259(10), 2200132 (2022). [[Makale]](https://doi.org/10.1002/pssb.202200132)
+8. Gürel, H. H. and B. Salmankurt “Quantum Simulation of the Silicene and Germanene for Sensing and Sequencing of DNA/RNA Nucleobases” Biosensors, 11(3), 59 (2021)  [[Makale]](https://doi.org/10.3390/bios11030059)
+9. Gürel, H. H. and B. Salmankurt. “Interaction between functionalized graphene with Ti/C and Histidine/Leucine: effects of charging” Physics of the Solid State, 62(12), 2474-2481 (2020)  [[Makale]](https://doi.org/10.1134/S1063783420120124)
+10. B. Salmankurt and Sıtkı Duman “First-principles study of structural, mechanical, lattice dynamical and thermal properties of nodal-line semimetals ZrXY (X=Si,Ge; Y=S,Se)” Philosophical Magazine, 97, 175-186 (2017)  [[Makale]](https://doi.org/10.1080/14786435.2016.1250967)
+11. B. Salmankurt and Hikmet Hakan Gürel. “Binding mechanisms of DNA/RNA nucleobases adsorbed on graphene under charging: first-principles van der Waals study” Mater. Res. Exp. 4, 065401 (2017).  [[Makale]](https://doi.org/10.1088/2053-1591/aa6e67)
+12. B. Salmankurt and Sıtkı Duman “Investigation of the structural, mechanical, dynamical and thermal properties of CsCaF3 and CsCdF3” Mater. Res. Exp. 3, 045903 (2016)  [[Makale]](https://doi.org/10.1088/2053-1591/3/4/045903)
+13. B.G. Yalcin, B. Salmankurt and Sıtkı Duman “Investigation of structural, mechanical, electronic, optical and dynamical properties of cubic BaLiF3, BaLiH3, and SrLiH3” Mater. Res. Express 3, 036301 (2016)  [[Makale]](https://doi.org/10.1088/2053-1591/3/3/036301)
+14. S. Bagci, B. G. Yalcin, H. R. Aliabad, S. Duman and B. Salmankurt “Structural, electronic, optical, vibrational and transport properties of CuBX2 (X= S, Se, Te) chalcopyrites.” RSC Advances, 6(64), 59527-59540 (2016)  [[Makale]](https://doi.org/10.1039/C6RA02981G)
 
