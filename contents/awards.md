@@ -12,4 +12,4 @@
 
 - First-prize Scholarship of CUMT, 2019.
 
-- [İkinci Sayfaya Git](charged_balls.html)
+- [İkinci Sayfaya Git](../charged_balls.html)
