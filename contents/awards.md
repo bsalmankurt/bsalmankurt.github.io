@@ -1,1 +1,1 @@
-- [Küre içinde bulunan yükler](../charged_balls.html)
+* [Küre içinde bulunan yükler](../charged_balls.html)
