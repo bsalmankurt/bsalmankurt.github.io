@@ -1,1 +1,3 @@
-* [Küre içinde bulunan yükler](../charged_balls.html)
+Deneme
+
+* [Küre içinde bulunan yükler](charged_balls.html)
