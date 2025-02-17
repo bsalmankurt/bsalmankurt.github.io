@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hesaplamalı Nanobilim Lab | [Adınız]</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&family=Source+Code+Pro&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            line-height: 1.6;
+            background: linear-gradient(45deg, #f3f4f6, #e5e7eb);
+            color: #1f2937;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            color: #111827;
+            margin-bottom: 1rem;
+        }
+
+        .content-section {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .code-section {
+            position: relative;
+            background: #1f2937;
+            color: #f3f4f6;
+            padding: 1.5rem;
+            border-radius: 8px;
+            font-family: 'Source Code Pro', monospace;
+            overflow-x: auto;
+            margin-top: 1.5rem;
+        }
+
+        .copy-button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .copy-button:hover {
+            background: #2563eb;
+        }
+
+        .success-message {
+            display: none;
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #10b981;
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 5px;
+            animation: fadeOut 3s forwards;
+        }
+
+        @keyframes fadeOut {
+            0% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Dr. Bahadır SALMANKURT</h1>
+            <p>Hesaplamalı Nanobilim Araştırma Grubu</p>
+        </header>
+
+        <div class="content-section">
+            <h2>Siesta Elektronik Band Yapısı Görselleştirme Kodu</h2>
+            <p>Aşağıda, Siesta programında elde edilen .bands uzantılı dosyayı görselleştirilebilir formata dönüştüren Fortran ile yazılmış kod bulunmaktadır.</p>
+            
+            <div class="code-section">
+                <button class="copy-button" onclick="copyCode()">Kopyala</button>
+                <pre><code>program cubic
+  implicit none
+  integer, parameter :: nmax = 10000
+  integer :: k, j, toplam, a, b, c
+  real    :: fermi
+  real, dimension(nmax, nmax) :: freq
+  integer, parameter :: unit_in = 5
+  integer, parameter :: unit_single = 10
+  integer, parameter :: unit_up     = 11
+  integer, parameter :: unit_down   = 12
+
+  ! Open the input file and read the data
+  open(unit=unit_in, file="fe.bands", status="old", action="read")
+  
+  read(unit_in, *) fermi
+  ! Skip header lines if necessary:
+  read(unit_in, *)  ! Unnecessary line
+  read(unit_in, *)  ! Unnecessary line
+  read(unit_in, *) a, b, c
+  toplam = a * b + 1
+
+  ! Write to different output files based on the spin state
+  if (b == 1) then
+      open(unit=unit_single, file="band.dat", status="replace", action="write")
+      do k = 1, c
+          read(unit_in, *) (freq(k, j), j = 1, toplam)
+          ! Offset according to the Fermi energy
+          freq(k, 1) = freq(k, 1) + fermi
+          ! Write all the data with reference to the Fermi level
+          write(unit_single, '(F7.4, 1000F12.6)') (freq(k, j) - fermi, j = 1, toplam)
+      end do
+      close(unit_single)
+  else
+      open(unit=unit_up,   file="band_up.dat",   status="replace", action="write")
+      open(unit=unit_down, file="band_down.dat", status="replace", action="write")
+      do k = 1, c
+          read(unit_in, *) (freq(k, j), j = 1, toplam)
+          freq(k, 1) = freq(k, 1) + fermi
+          ! For the spin-up part, write the first (a+1) values
+          write(unit_up, '(F7.4, 1000F12.6)') (freq(k, j) - fermi, j = 1, a + 1)
+          ! For the spin-down part, the value at the end of spin-up is repeated as the first value, and the remaining part is written
+          freq(k, a + 1) = freq(k, 1)
+          write(unit_down, '(F7.4, 1000F12.6)') (freq(k, j) - fermi, j = a + 1, toplam)
+      end do
+      close(unit_up)
+      close(unit_down)
+  end if
+  
+  close(unit_in)
+  stop
+end program cubic
+</code></pre>
+            </div>
+        </div>
+
+        <div id="successMessage" class="success-message">Kod panoya kopyalandı!</div>
+    </div>
+
+    <script>
+        function copyCode() {
+            const codeBlock = document.querySelector('pre');
+            const range = document.createRange();
+            range.selectNode(codeBlock);
+            window.getSelection().removeAllRanges();
+            window.getSelection().addRange(range);
+            
+            try {
+                document.execCommand('copy');
+                showSuccessMessage();
+            } catch (err) {
+                console.error('Kopyalama başarısız:', err);
+            }
+            
+            window.getSelection().removeAllRanges();
+        }
+
+        function showSuccessMessage() {
+            const message = document.getElementById('successMessage');
+            message.style.display = 'block';
+            setTimeout(() => {
+                message.style.display = 'none';
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
