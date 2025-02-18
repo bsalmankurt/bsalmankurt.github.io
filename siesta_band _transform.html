@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <title>Siesta band çizdirilebilir hale getirme aracı</title>
+  <style>
+    /* Önceki stil tanımları aynen korundu */
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 2rem;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      color: #e6e6e6;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: rgba(255, 255, 255, 0.05);
+      padding: 2rem;
+      border-radius: 15px;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 0 20px rgba(0, 118, 255, 0.1);
+    }
+
+    h1 {
+      text-align: center;
+      color: #00f3ff;
+      font-size: 2.5rem;
+      margin-bottom: 1.5rem;
+      text-shadow: 0 0 10px rgba(0, 243, 255, 0.3);
+    }
+
+    p {
+      line-height: 1.6;
+      margin-bottom: 2rem;
+      color: #cccccc;
+    }
+
+    input[type="file"] {
+      display: block;
+      margin: 1rem 0;
+      padding: 0.8rem;
+      width: 100%;
+      background: rgba(255, 255, 255, 0.1);
+      border: 2px solid #00f3ff;
+      border-radius: 8px;
+      color: white;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    input[type="file"]:hover {
+      background: rgba(0, 243, 255, 0.1);
+      box-shadow: 0 0 15px rgba(0, 243, 255, 0.2);
+    }
+
+    button {
+      background: linear-gradient(45deg, #00f3ff, #0066ff);
+      border: none;
+      padding: 1rem 2rem;
+      color: white;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      transition: all 0.3s ease;
+      width: 100%;
+      margin: 1rem 0;
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(0, 243, 255, 0.4);
+      background: linear-gradient(45deg, #0066ff, #00f3ff);
+    }
+
+    .link-container {
+      margin-top: 2rem;
+    }
+
+    .link-container a {
+      display: block;
+      padding: 1rem;
+      margin: 0.5rem 0;
+      background: rgba(0, 243, 255, 0.1);
+      border: 1px solid #00f3ff;
+      border-radius: 8px;
+      color: #00f3ff;
+      text-decoration: none;
+      transition: all 0.3s ease;
+    }
+
+    .link-container a:hover {
+      background: rgba(0, 243, 255, 0.2);
+      transform: translateX(10px);
+      box-shadow: 0 0 15px rgba(0, 243, 255, 0.2);
+    }
+
+    code {
+      background: rgba(0, 243, 255, 0.1);
+      padding: 0.2rem 0.4rem;
+      border-radius: 4px;
+      color: #00f3ff;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .container {
+      animation: fadeIn 0.5s ease-out;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Siesta Band Çizdirme Aracı</h1>
+    <p> Bu araç sayesinde .bands uzantılı dosya, grafikler için çizilebilir hale getirilmektedir. Dosyayı yükleyin ve dönüştüre basın. </p>
+    <input type="file" id="fileInput">
+    <button id="processButton">Dönüştür</button>
+
+    <div class="link-container" id="downloadLinks"></div>
+  </div>
+
+  <script>
+    // Hata ayıklama için console.log'lar eklendi
+    function formatFirst(num) {
+      let s = Number(num).toFixed(4);
+      return s.padStart(7, ' ');
+    }
+
+    function formatOther(num) {
+      let s = Number(num).toFixed(6);
+      return s.padStart(12, ' ');
+    }
+
+    function processFile(text) {
+      console.log('Dosya işleniyor...');
+      const lines = text.split(/\r?\n/).map(line => line.trim()).filter(line => line !== '');
+      if (lines.length < 4) {
+        alert("Hata: Geçersiz dosya formatı!");
+        return;
+      }
+
+      const fermi = parseFloat(lines[0]);
+      if (isNaN(fermi)) {
+        alert("Hata: Geçersiz fermi değeri!");
+        return;
+      }
+
+      const headerTokens = lines[3].split(/\s+/);
+      if (headerTokens.length < 3) {
+        alert("Hata: Eksik parametreler!");
+        return;
+      }
+
+      const a = parseInt(headerTokens[0], 10);
+      const b = parseInt(headerTokens[1], 10);
+      const c = parseInt(headerTokens[2], 10);
+      
+      if (isNaN(a) || isNaN(b) || isNaN(c)) {
+        alert("Hata: Geçersiz a/b/c değerleri!");
+        return;
+      }
+
+      const toplam = a * b + 1;
+      const remainingText = lines.slice(4).join(' ');
+      const allTokens = remainingText.split(/\s+/).filter(tok => tok !== "");
+
+      console.log(`Beklenen token: ${c * toplam}, Mevcut token: ${allTokens.length}`);
+      
+      if (allTokens.length < c * toplam) {
+        alert(`Hata: Eksik veri! Beklenen: ${c * toplam}, Bulunan: ${allTokens.length}`);
+        return;
+      }
+
+      let outputSingle = [];
+      let outputUp = [];
+      let outputDown = [];
+
+      for (let k = 0; k < c; k++) {
+        const startIdx = k * toplam;
+        let row = allTokens.slice(startIdx, startIdx + toplam).map(tok => parseFloat(tok));
+        
+        if (row.some(num => isNaN(num))) {
+          alert(`Hata: Satır ${k+1}'de geçersiz sayı!`);
+          return;
+        }
+
+        row[0] += fermi;
+
+        if (b === 1) {
+          const formatted = formatFirst(row[0] - fermi) + row.slice(1).map(n => formatOther(n - fermi)).join('');
+          outputSingle.push(formatted);
+        } else {
+          const spinUp = [formatFirst(row[0] - fermi)];
+          for (let j = 1; j < a + 1; j++) {
+            spinUp.push(formatOther(row[j] - fermi));
+          }
+          outputUp.push(spinUp.join(''));
+
+          row[a] = row[0];
+          const spinDown = [formatFirst(row[a] - fermi)];
+          for (let j = a + 1; j < toplam; j++) {
+            spinDown.push(formatOther(row[j] - fermi));
+          }
+          outputDown.push(spinDown.join(''));
+        }
+      }
+
+      const downloadLinksDiv = document.getElementById("downloadLinks");
+      downloadLinksDiv.innerHTML = "";
+
+      if (b === 1) {
+        const fileContent = outputSingle.join('\n');
+        const blob = new Blob([fileContent], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const aLink = document.createElement("a");
+        aLink.href = url;
+        aLink.download = "band.dat";
+        aLink.textContent = "band.dat dosyasını indir";
+        downloadLinksDiv.appendChild(aLink);
+      } else {
+        const upContent = outputUp.join('\n');
+        const blobUp = new Blob([upContent], { type: 'text/plain' });
+        const urlUp = URL.createObjectURL(blobUp);
+        const aLinkUp = document.createElement("a");
+        aLinkUp.href = urlUp;
+        aLinkUp.download = "band_up.dat";
+        aLinkUp.textContent = "band_up.dat dosyasını indir";
+        downloadLinksDiv.appendChild(aLinkUp);
+
+        const downContent = outputDown.join('\n');
+        const blobDown = new Blob([downContent], { type: 'text/plain' });
+        const urlDown = URL.createObjectURL(blobDown);
+        const aLinkDown = document.createElement("a");
+        aLinkDown.href = urlDown;
+        aLinkDown.download = "band_down.dat";
+        aLinkDown.textContent = "band_down.dat dosyasını indir";
+        downloadLinksDiv.appendChild(aLinkDown);
+      }
+      console.log('İşlem başarıyla tamamlandı!');
+    }
+
+    document.getElementById("processButton").addEventListener("click", function() {
+      console.log('Dönüştürme butonuna tıklandı');
+      const fileInput = document.getElementById("fileInput");
+      if (fileInput.files.length === 0) {
+        alert("Lütfen önce bir dosya seçin!");
+        return;
+      }
+      const file = fileInput.files[0];
+      const reader = new FileReader();
+      
+      reader.onload = function(e) {
+        console.log('Dosya okuma tamamlandı');
+        processFile(e.target.result);
+      };
+      
+      reader.onerror = function(error) {
+        console.error('Dosya okuma hatası:', error);
+        alert("Dosya okunamadı!");
+      };
+      
+      console.log('Dosya okunuyor...');
+      reader.readAsText(file);
+    });
+  </script>
+</body>
+</html>
