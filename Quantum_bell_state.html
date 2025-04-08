@@ -3,33 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>İkili Yazı Tura Oyunu</title>
-    <style>
-        :root {
-            /* Varsayılan hız her mekanizma için ayrı ayrı ayarlanacak */
-            /* --spin-duration: 1s; Artık CSS'te sabitlenebilir */
-        }
+    <title>İkili Kübit Oyunu (Etiketli)</title> <style>
+        :root { }
 
         body {
             display: flex;
-            flex-direction: column; /* Eklendi: Tiki yukarıya almak için */
-            justify-content: center; /* Mekanizmaları ortala */
-            align-items: center; /* Eklendi: Tiki ortalamak için */
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
             min-height: 100vh;
             background-color: #2c3e50;
             margin: 0;
-            padding-top: 40px; /* Üstten biraz boşluk */
+            padding-top: 40px;
             font-family: sans-serif;
-            overflow-x: hidden; /* Yatay kaydırmayı engelle */
+            overflow-x: hidden;
         }
 
-        /* Entanglement (Dolanıklık) tiki için stil */
         .entanglement-control {
             display: flex;
-            flex-direction: column; /* Alt alta sıralamak için */
+            flex-direction: column;
             align-items: center;
             gap: 10px;
-            margin-bottom: 20px; /* Mekanizmalardan biraz uzaklaştır */
+            margin-bottom: 30px;
             color: white;
         }
 
@@ -39,23 +34,34 @@
             align-items: center;
         }
 
-        /* İki yazı-tura mekanizmasını içeren ana alan */
         .game-area {
             display: flex;
             justify-content: center;
-            align-items: flex-start; /* Üstten hizalama */
-            gap: 60px; /* İki mekanizma arasına boşluk */
-            flex-wrap: wrap; /* Küçük ekranlarda alt alta geçsin */
+            align-items: flex-start; /* Etiketler ve paraları üstten hizala */
+            gap: 80px;
+            flex-wrap: wrap;
+            position: relative;
+            width: 100%;
+            padding: 20px 0;
         }
 
-        /* Tek bir yazı-tura mekanizmasının genel kapsayıcısı */
         .coin-flipper {
             display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 40px; /* Para ile kontroller arası boşluk */
-            perspective: 1000px; /* 3D efekti her bir mekanizma için ayrı */
+            flex-direction: column; /* Etiket, para, kontroller alt alta */
+            align-items: center; /* Yatayda ortala */
+            gap: 15px; /* Etiket, para ve kontroller arası boşluk (güncellendi) */
+            perspective: 1000px;
         }
+
+        /* ---- YENİ: Kübit Etiketi Stili ---- */
+        .qubit-label {
+            color: #ecf0f1; /* Açık gri/beyaz */
+            font-size: 1.4em; /* Biraz daha büyük */
+            font-weight: bold;
+            /* margin-bottom: 15px;  gap ile ayarlandığı için kaldırılabilir veya azaltılabilir */
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.6); /* Okunabilirlik için gölge */
+        }
+        /* ---- Etiket Stili Sonu ---- */
 
 
         .coin-container {
@@ -64,7 +70,9 @@
             position: relative;
             transform-style: preserve-3d;
             transition: transform 0.5s ease-out;
-            --spin-duration: 1s; /* Sabit hız CSS değişkeni */
+            --spin-duration: 1s;
+            margin-top: 5px; /* Etiket ile para arasına ek boşluk */
+            margin-bottom: 25px; /* Para ile kontroller arasına ek boşluk */
         }
 
         .coin-container.spinning {
@@ -101,32 +109,27 @@
             to { transform: rotateY(3600deg); }
         }
 
-        /* Kontroller (Her mekanizma için ortak stil) */
         .controls {
             display: flex;
             flex-direction: column;
             align-items: center;
             gap: 20px;
             color: white;
+            margin-top: 10px; /* Kontrolleri biraz aşağı al */
         }
 
-        .slider-group {
-            /* display: none; Artık görünmeyecek */
-        }
-
+        .slider-group { }
 
         .controls label {
             font-size: 1.1em;
             white-space: nowrap;
         }
 
-        /* ID yerine class kullandık */
         .speed-slider {
             width: 200px;
             cursor: pointer;
         }
 
-        /* ID yerine class kullandık */
         .speed-value {
             min-width: 4em;
             text-align: center;
@@ -136,14 +139,13 @@
             font-family: monospace;
         }
 
-        /* ID yerine class kullandık */
         .action-button {
             padding: 10px 20px;
             font-size: 1.1em;
             cursor: pointer;
             border: none;
             border-radius: 5px;
-            background-color: #3498db; /* Başlangıçta mavi (Çevir) */
+            background-color: #3498db;
             color: white;
             transition: background-color 0.3s ease, transform 0.1s ease;
             min-width: 150px;
@@ -156,9 +158,65 @@
             transform: scale(0.95);
         }
 
-        .action-button.stop-state { /* Durum için farklı sınıf adı */
-            background-color: #e74c3c; /* Kırmızı (Dur) */
+        .action-button.stop-state {
+            background-color: #e74c3c;
         }
+
+        /* ---- Daha Canlı Dolaşıklık Etkileşim Efekti ---- */
+        .entanglement-effect {
+            position: absolute;
+            height: 6px;
+            background: linear-gradient(
+                90deg,
+                rgba(0, 255, 255, 0.8), /* Cyan */
+                rgba(255, 0, 255, 0.9), /* Magenta */
+                rgba(0, 255, 0, 0.8),   /* Lime */
+                rgba(0, 255, 255, 0.8)  /* Cyan (döngü için) */
+            );
+            background-size: 300% 100%;
+            border-radius: 3px;
+            display: none;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            z-index: 0;
+            transform-origin: 0 50%;
+            pointer-events: none;
+            box-shadow:
+                0 0 8px rgba(0, 255, 255, 0.7),
+                0 0 15px rgba(255, 0, 255, 0.6),
+                0 0 25px rgba(0, 255, 0, 0.5);
+            animation:
+                pulse-beam-stronger 1.2s ease-in-out infinite,
+                move-gradient 2s linear infinite;
+        }
+
+        .entanglement-effect.active {
+            display: block;
+            opacity: 1;
+        }
+
+        @keyframes pulse-beam-stronger {
+            0%, 100% {
+                transform: scaleY(0.7);
+                opacity: 0.6;
+                filter: brightness(0.8);
+            }
+            50% {
+                transform: scaleY(1);
+                opacity: 1;
+                filter: brightness(1.2);
+            }
+        }
+
+        @keyframes move-gradient {
+            0% {
+                background-position: 0% 50%;
+            }
+            100% {
+                background-position: 100% 50%;
+            }
+        }
+        /* ---- Efekt Stilleri Sonu ---- */
 
     </style>
 </head>
@@ -176,134 +234,171 @@
     </div>
 
     <div class="game-area">
+        <div class="entanglement-effect" id="entanglement-line"></div>
 
         <div class="coin-flipper" id="flipper1">
+             <div class="qubit-label">kübit 1</div>
             <div class="coin-container">
                 <div class="coin-face front">1</div>
                 <div class="coin-face back">0</div>
             </div>
             <div class="controls">
-                <div class="slider-group">
-                    </div>
+                <div class="slider-group"></div>
                 <button class="action-button">H kapısı uygula</button>
             </div>
         </div>
 
         <div class="coin-flipper" id="flipper2">
+             <div class="qubit-label">kübit 2</div>
             <div class="coin-container">
                 <div class="coin-face front">1</div>
                 <div class="coin-face back">0</div>
             </div>
             <div class="controls">
-                <div class="slider-group">
-                    </div>
+                <div class="slider-group"></div>
                 <button class="action-button">H kapısı uygula</button>
             </div>
         </div>
-
     </div>
 
     <script>
-        function setupCoinFlipper(flipperId, isMaster) {
+        // Global değişkenler ve element referansları
+        const entanglementCheckbox = document.getElementById('entanglement');
+        const sameOutcomeCheckbox = document.getElementById('same-outcome');
+        const differentOutcomeCheckbox = document.getElementById('different-outcome');
+        const flipper1Element = document.getElementById('flipper1');
+        const flipper2Element = document.getElementById('flipper2');
+        const flipper1CoinContainer = flipper1Element.querySelector('.coin-container');
+        const flipper2CoinContainer = flipper2Element.querySelector('.coin-container');
+        const flipper1ActionButton = flipper1Element.querySelector('.action-button');
+        const flipper2ActionButton = flipper2Element.querySelector('.action-button');
+        const entanglementLine = document.getElementById('entanglement-line'); // Efekt elementi
+        const gameArea = document.querySelector('.game-area'); // Efekti konumlandırmak için
+
+        let flipperStates = {
+            flipper1: { isSpinning: false },
+            flipper2: { isSpinning: false }
+        };
+
+        function updateEntanglementEffect() {
+            const isEntangled = entanglementCheckbox.checked;
+            const f1Spinning = flipperStates.flipper1.isSpinning;
+            const f2Spinning = flipperStates.flipper2.isSpinning;
+
+            if (isEntangled && f1Spinning && f2Spinning) {
+                const rect1 = flipper1CoinContainer.getBoundingClientRect();
+                const rect2 = flipper2CoinContainer.getBoundingClientRect();
+                const gameAreaRect = gameArea.getBoundingClientRect();
+
+                // Paraların merkez koordinatlarını game-area'ya göre hesapla
+                // DİKKAT: Efektin başlangıç/bitiş noktalarını para merkezleri yerine etiketlerin altı veya paraların üstü gibi
+                // ayarlamak daha estetik olabilir, ancak şimdilik merkezleri kullanıyoruz.
+                const x1 = rect1.left + rect1.width / 2 - gameAreaRect.left;
+                const y1 = rect1.top + rect1.height / 2 - gameAreaRect.top;
+                const x2 = rect2.left + rect2.width / 2 - gameAreaRect.left;
+                const y2 = rect2.top + rect2.height / 2 - gameAreaRect.top;
+
+                const distance = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+                const angle = Math.atan2(y2 - y1, x2 - x1) * (180 / Math.PI);
+
+                entanglementLine.style.width = `${distance}px`;
+                entanglementLine.style.left = `${x1}px`;
+                 // Efekt çizgisinin dikey konumunu para merkezine göre ayarla
+                entanglementLine.style.top = `${y1 - entanglementLine.offsetHeight / 2}px`;
+                entanglementLine.style.transform = `rotate(${angle}deg)`;
+                entanglementLine.classList.add('active');
+
+            } else {
+                entanglementLine.classList.remove('active');
+            }
+        }
+
+        function setupCoinFlipper(flipperId) {
             const flipperElement = document.getElementById(flipperId);
             if (!flipperElement) return;
 
             const coinContainer = flipperElement.querySelector('.coin-container');
             const actionButton = flipperElement.querySelector('.action-button');
-            const otherFlipperId = isMaster ? 'flipper2' : 'flipper1';
-            const otherFlipperElement = document.getElementById(otherFlipperId);
-            const otherCoinContainer = otherFlipperElement.querySelector('.coin-container');
-            const otherActionButton = otherFlipperElement.querySelector('.action-button');
-            const entanglementCheckbox = document.getElementById('entanglement');
-            const sameOutcomeCheckbox = document.getElementById('same-outcome');
-            const differentOutcomeCheckbox = document.getElementById('different-outcome');
-            const spinDuration = '1s'; // Sabit hız
+            const state = flipperStates[flipperId];
 
+            const otherFlipperId = flipperId === 'flipper1' ? 'flipper2' : 'flipper1';
+            const otherFlipperState = flipperStates[otherFlipperId];
+            const otherCoinContainer = document.getElementById(otherFlipperId).querySelector('.coin-container');
+            const otherActionButton = document.getElementById(otherFlipperId).querySelector('.action-button');
+
+            const spinDuration = '1s';
             coinContainer.style.setProperty('--spin-duration', spinDuration);
-            otherCoinContainer.style.setProperty('--spin-duration', spinDuration);
-
-            let isSpinning = false;
-            let otherIsSpinning = false; // İkinci paranın dönme durumunu takip et
 
             function flipCoin() {
-                const currentFlipperId = flipperElement.id;
-                const isMasterFlipper = currentFlipperId === 'flipper1';
+                const isEntangled = entanglementCheckbox.checked;
 
-                if (isSpinning) {
-                    isSpinning = false;
+                if (state.isSpinning) { // Para dönüyorsa: Durdur (Ölçüm yap)
+                    state.isSpinning = false;
                     coinContainer.classList.remove('spinning');
                     actionButton.disabled = true;
 
                     let resultIsHeads = Math.random() < 0.5;
                     let targetRotation = resultIsHeads ? 0 : 180;
 
+                    coinContainer.style.transition = 'transform 0.5s ease-out';
                     coinContainer.style.transform = `rotateY(${targetRotation}deg)`;
 
-                    // Entanglement aktif ise diğerini de durdur ve sonucu ayarla
-                    if (entanglementCheckbox.checked) {
+                    if (isEntangled) {
+                        otherFlipperState.isSpinning = false;
                         otherCoinContainer.classList.remove('spinning');
                         otherActionButton.disabled = true;
-                        otherIsSpinning = false;
 
-                        if (sameOutcomeCheckbox.checked) {
-                            otherCoinContainer.style.transform = `rotateY(${targetRotation}deg)`;
-                        } else if (differentOutcomeCheckbox.checked) {
-                            const otherTargetRotation = resultIsHeads ? 180 : 0;
-                            otherCoinContainer.style.transform = `rotateY(${otherTargetRotation}deg)`;
+                        let otherTargetRotation;
+                        if (sameOutcomeCheckbox.checked || (!sameOutcomeCheckbox.checked && !differentOutcomeCheckbox.checked)) {
+                            otherTargetRotation = targetRotation;
                         } else {
-                            // Ne aynı ne de farklı seçilmişse varsayılan olarak aynı yap
-                            otherCoinContainer.style.transform = `rotateY(${targetRotation}deg)`;
+                            otherTargetRotation = (targetRotation === 0) ? 180 : 0;
                         }
+                        otherCoinContainer.style.transition = 'transform 0.5s ease-out';
+                        otherCoinContainer.style.transform = `rotateY(${otherTargetRotation}deg)`;
                     }
 
                     setTimeout(() => {
                         actionButton.textContent = 'H kapısı uygula';
                         actionButton.classList.remove('stop-state');
                         actionButton.disabled = false;
-                        if (entanglementCheckbox.checked) {
+                        if (isEntangled) {
                             otherActionButton.textContent = 'H kapısı uygula';
                             otherActionButton.classList.remove('stop-state');
-                            otherActionButton.disabled = false; // Re-enable the other button
+                            otherActionButton.disabled = false;
                         }
-                    }, 500);
-                } else {
-                    isSpinning = true;
+                        updateEntanglementEffect(); // Durduktan sonra efekti kontrol et
+                    }, 550);
+
+                } else { // Para duruyorsa: Döndür (H kapısı uygula)
+                    state.isSpinning = true;
+                    coinContainer.style.transition = 'none'; // Anında animasyona geç
                     coinContainer.classList.add('spinning');
-                    actionButton.textContent = 'ölçüm yap';
+                    actionButton.textContent = 'Ölçüm yap';
                     actionButton.classList.add('stop-state');
-                    if (entanglementCheckbox.checked) {
-                        otherCoinContainer.classList.add('spinning');
-                        otherActionButton.textContent = 'ölçüm yap';
-                        otherActionButton.classList.add('stop-state');
-                        otherIsSpinning = true;
+
+                    if (isEntangled) {
+                        if (!otherFlipperState.isSpinning) {
+                           otherFlipperState.isSpinning = true;
+                           otherCoinContainer.style.transition = 'none';
+                           otherCoinContainer.classList.add('spinning');
+                           otherActionButton.textContent = 'Ölçüm yap';
+                           otherActionButton.classList.add('stop-state');
+                        }
                     }
+                    updateEntanglementEffect(); // Dönmeye başlayınca efekti kontrol et
                 }
-                flipperElement.__isSpinning = isSpinning;
             }
 
             actionButton.addEventListener('click', flipCoin);
             actionButton.textContent = 'H kapısı uygula';
-            isSpinning = false;
-            flipperElement.__isSpinning = false;
-
-            flipperElement.__flipCoin = flipCoin;
+            state.isSpinning = false;
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            setupCoinFlipper('flipper1', true);
-            setupCoinFlipper('flipper2', false);
+            setupCoinFlipper('flipper1');
+            setupCoinFlipper('flipper2');
 
-            const entanglementCheckbox = document.getElementById('entanglement');
-            const sameOutcomeCheckbox = document.getElementById('same-outcome');
-            const differentOutcomeCheckbox = document.getElementById('different-outcome');
-            const flipper2Element = document.getElementById('flipper2');
-            const flipper2ActionButton = flipper2Element.querySelector('.action-button');
-            const flipper1Element = document.getElementById('flipper1');
-            const flipper1ActionButton = flipper1Element.querySelector('.action-button');
-            const flipper2CoinContainer = flipper2Element.querySelector('.coin-container');
-            const flipper1CoinContainer = flipper1Element.querySelector('.coin-container');
-
-            // Başlangıçta entanglement kapalıysa ikinci butonu etkinleştir (zaten aktif)
             sameOutcomeCheckbox.disabled = true;
             differentOutcomeCheckbox.disabled = true;
 
@@ -312,19 +407,24 @@
                 sameOutcomeCheckbox.disabled = !isEntangled;
                 differentOutcomeCheckbox.disabled = !isEntangled;
 
-                if (isEntangled) {
-                    if (flipper1Element.__isSpinning && !flipper2Element.__isSpinning) {
+                 if (isEntangled) {
+                    // Dolaşıklık açıldığında biri dönüyorsa diğerini de başlat
+                    if (flipperStates.flipper1.isSpinning && !flipperStates.flipper2.isSpinning) {
+                        flipperStates.flipper2.isSpinning = true;
+                        flipper2CoinContainer.style.transition = 'none';
                         flipper2CoinContainer.classList.add('spinning');
-                        flipper2ActionButton.textContent = 'ölçüm yap';
+                        flipper2ActionButton.textContent = 'Ölçüm yap';
                         flipper2ActionButton.classList.add('stop-state');
-                        flipper2Element.__isSpinning = true;
-                    } else if (flipper2Element.__isSpinning && !flipper1Element.__isSpinning) {
+                    }
+                    else if (flipperStates.flipper2.isSpinning && !flipperStates.flipper1.isSpinning) {
+                        flipperStates.flipper1.isSpinning = true;
+                        flipper1CoinContainer.style.transition = 'none';
                         flipper1CoinContainer.classList.add('spinning');
-                        flipper1ActionButton.textContent = 'ölçüm yap';
+                        flipper1ActionButton.textContent = 'Ölçüm yap';
                         flipper1ActionButton.classList.add('stop-state');
-                        flipper1Element.__isSpinning = true;
                     }
                 }
+                updateEntanglementEffect(); // Dolaşıklık durumu değişince efekti kontrol et
             });
 
             sameOutcomeCheckbox.addEventListener('change', () => {
@@ -338,6 +438,9 @@
                     sameOutcomeCheckbox.checked = false;
                 }
             });
+
+            window.addEventListener('resize', updateEntanglementEffect); // Pencere boyutlandığında efekti güncelle
+            updateEntanglementEffect(); // İlk yüklemede efekti kontrol et
         });
     </script>
 
