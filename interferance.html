@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Faz Kontrollü Sinüs Osilatörleri ve Girişim</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #f4f4f4;
+            color: #333;
+            padding-bottom: 30px; /* Altta boşluk bırak */
+        }
+        .wave-container {
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            width: 90%;
+            max-width: 700px;
+            text-align: center;
+        }
+        canvas {
+            border: 1px solid black;
+            background-color: #eef;
+            display: block;
+            margin: 15px auto;
+            max-width: 100%;
+        }
+        .controls {
+            margin-top: 15px;
+            display: grid;
+            /* Geniş ekranda 3 sütunlu grid */
+            grid-template-columns: auto 1fr auto; /* Label | Slider | Value */
+            gap: 10px 15px; /* Row gap | Column gap */
+            align-items: center;
+        }
+        /* Daha dar ekranlar için (opsiyonel) */
+        @media (max-width: 500px) {
+            .controls {
+                 /* Tek sütuna düşür */
+                grid-template-columns: 1fr;
+                gap: 5px 0; /* Satır aralığını azalt */
+            }
+             label {
+                text-align: left; /* Etiketleri sola hizala */
+                margin-bottom: -5px; /* Kaydırıcı ile arasını azalt */
+            }
+            span {
+                 display: inline-block; /* Yan yana getirmek için */
+                 margin-left: 10px; /* Kaydırıcıdan sonra boşluk */
+                 min-width: 30px;
+                 text-align: right;
+            }
+            input[type="range"] + span { /* Sadece slider yanındaki span */
+                 float: right; /* Değeri sağa yasla */
+            }
+        }
+
+        label {
+            text-align: right;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+        input[type="range"] {
+            width: 100%;
+            cursor: pointer;
+            vertical-align: middle; /* Dikey hizalama */
+        }
+        span {
+            font-weight: bold;
+            min-width: 35px; /* Değer için biraz daha geniş alan */
+            text-align: left;
+            font-size: 0.9em;
+            vertical-align: middle; /* Dikey hizalama */
+        }
+        h1, h2 {
+            color: #0056b3;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Faz Kontrollü Sinüs Osilatörleri ve Girişim</h1>
+
+    <div class="wave-container">
+        <h2>Dalga 1</h2>
+        <canvas id="canvas1" width="600" height="150"></canvas>
+        <div class="controls">
+            <label for="amp1">Genlik 1:</label>
+            <input type="range" id="amp1" min="0" max="70" value="30" step="1">
+            <span id="amp1Value">30</span>
+
+            <label for="freq1">Frekans 1:</label>
+            <input type="range" id="freq1" min="0.5" max="10" value="2" step="0.1">
+            <span id="freq1Value">2.0</span>
+
+            <label for="phase1">Faz 1 (°):</label>
+            <input type="range" id="phase1" min="0" max="360" value="0" step="1">
+            <span id="phase1Value">0</span>
+        </div>
+    </div>
+
+    <div class="wave-container">
+        <h2>Dalga 2</h2>
+        <canvas id="canvas2" width="600" height="150"></canvas>
+        <div class="controls">
+            <label for="amp2">Genlik 2:</label>
+            <input type="range" id="amp2" min="0" max="70" value="40" step="1">
+            <span id="amp2Value">40</span>
+
+            <label for="freq2">Frekans 2:</label>
+            <input type="range" id="freq2" min="0.5" max="10" value="3" step="0.1">
+            <span id="freq2Value">3.0</span>
+
+            <label for="phase2">Faz 2 (°):</label>
+            <input type="range" id="phase2" min="0" max="360" value="0" step="1">
+            <span id="phase2Value">0</span>
+        </div>
+    </div>
+
+    <div class="wave-container">
+        <h2>Girişim (Toplam Dalga)</h2>
+        <canvas id="canvas3" width="600" height="200"></canvas>
+        <p style="font-size: 0.9em; color: #555;">(İki dalganın anlık genliklerinin toplamı gösterilmektedir.)</p>
+    </div>
+
+    <script>
+        // Canvas ve Context Referansları
+        const canvas1 = document.getElementById('canvas1');
+        const ctx1 = canvas1.getContext('2d');
+        const canvas2 = document.getElementById('canvas2');
+        const ctx2 = canvas2.getContext('2d');
+        const canvas3 = document.getElementById('canvas3');
+        const ctx3 = canvas3.getContext('2d');
+
+        // Kontrol Elemanları Referansları
+        const amp1Slider = document.getElementById('amp1');
+        const freq1Slider = document.getElementById('freq1');
+        const phase1Slider = document.getElementById('phase1'); // Yeni
+        const amp2Slider = document.getElementById('amp2');
+        const freq2Slider = document.getElementById('freq2');
+        const phase2Slider = document.getElementById('phase2'); // Yeni
+
+        // Değer Göstergeleri Referansları
+        const amp1ValueSpan = document.getElementById('amp1Value');
+        const freq1ValueSpan = document.getElementById('freq1Value');
+        const phase1ValueSpan = document.getElementById('phase1Value'); // Yeni
+        const amp2ValueSpan = document.getElementById('amp2Value');
+        const freq2ValueSpan = document.getElementById('freq2Value');
+        const phase2ValueSpan = document.getElementById('phase2Value'); // Yeni
+
+        // Maksimum Genlikler
+        const maxAmp1 = parseFloat(amp1Slider.max);
+        const maxAmp2 = parseFloat(amp2Slider.max);
+        const maxTotalAmplitude = maxAmp1 + maxAmp2;
+
+        // Dereceyi radyana çeviren yardımcı fonksiyon
+        function degreesToRadians(degrees) {
+            return degrees * (Math.PI / 180);
+        }
+
+        // Çizim Fonksiyonları
+        function drawAxes(ctx, canvasWidth, canvasHeight) {
+            ctx.strokeStyle = '#ddd';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(0, canvasHeight / 2);
+            ctx.lineTo(canvasWidth, canvasHeight / 2);
+            ctx.stroke();
+        }
+
+        // drawWave fonksiyonu faz parametresi alacak şekilde güncellendi
+        function drawWave(ctx, amplitude, frequency, phaseRadians, canvasWidth, canvasHeight, color) {
+            ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+            drawAxes(ctx, canvasWidth, canvasHeight);
+
+            ctx.beginPath();
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = color;
+
+            const centerY = canvasHeight / 2;
+
+            ctx.moveTo(0, centerY - amplitude * Math.sin(phaseRadians)); // Başlangıç noktasını faza göre ayarla
+
+            for (let x = 0; x < canvasWidth; x++) {
+                // Açıyı hesaplarken fazı ekle
+                const angle = ((x / canvasWidth) * frequency * 2 * Math.PI) + phaseRadians;
+                const y = centerY - amplitude * Math.sin(angle);
+                ctx.lineTo(x, y);
+            }
+            ctx.stroke();
+        }
+
+        // drawSuperposition fonksiyonu faz parametreleri alacak şekilde güncellendi
+        function drawSuperposition(ctx, amp1, freq1, phase1Rad, amp2, freq2, phase2Rad, canvasWidth, canvasHeight, color) {
+            ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+            drawAxes(ctx, canvasWidth, canvasHeight);
+
+            ctx.beginPath();
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = color;
+
+            const centerY = canvasHeight / 2;
+            // Girişim dalgasının genliğini ölçekle (maksimum yüksekliği geçmemesi için)
+            // Ölçekleme faktörü 0 olmamalı
+            const scaleFactor = maxTotalAmplitude > 0 ? (canvasHeight / 2) / maxTotalAmplitude : 1;
+
+             // Başlangıç noktasını hesapla
+             const startY1 = amp1 * Math.sin(phase1Rad);
+             const startY2 = amp2 * Math.sin(phase2Rad);
+             const startTotalY = startY1 + startY2;
+             const startScaledY = centerY - startTotalY * scaleFactor;
+             ctx.moveTo(0, startScaledY);
+
+
+            for (let x = 0; x < canvasWidth; x++) {
+                const angle1 = ((x / canvasWidth) * freq1 * 2 * Math.PI) + phase1Rad;
+                const y1 = amp1 * Math.sin(angle1);
+
+                const angle2 = ((x / canvasWidth) * freq2 * 2 * Math.PI) + phase2Rad;
+                const y2 = amp2 * Math.sin(angle2);
+
+                const totalY = y1 + y2;
+                const scaledY = centerY - totalY * scaleFactor; // Ölçeklenmiş ve ters çevrilmiş Y
+
+                ctx.lineTo(x, scaledY);
+            }
+            ctx.stroke();
+        }
+
+        // Güncelleme Fonksiyonu
+        function updateWaves() {
+            // Slider değerlerini al
+            const amp1 = parseFloat(amp1Slider.value);
+            const freq1 = parseFloat(freq1Slider.value);
+            const phase1Deg = parseFloat(phase1Slider.value); // Yeni
+            const amp2 = parseFloat(amp2Slider.value);
+            const freq2 = parseFloat(freq2Slider.value);
+            const phase2Deg = parseFloat(phase2Slider.value); // Yeni
+
+            // Fazı radyana çevir
+            const phase1Rad = degreesToRadians(phase1Deg); // Yeni
+            const phase2Rad = degreesToRadians(phase2Deg); // Yeni
+
+            // Değer göstergelerini güncelle
+            amp1ValueSpan.textContent = amp1.toFixed(0); // Genlik için .0 gereksiz
+            freq1ValueSpan.textContent = freq1.toFixed(1);
+            phase1ValueSpan.textContent = phase1Deg.toFixed(0); // Yeni
+            amp2ValueSpan.textContent = amp2.toFixed(0); // Genlik için .0 gereksiz
+            freq2ValueSpan.textContent = freq2.toFixed(1);
+            phase2ValueSpan.textContent = phase2Deg.toFixed(0); // Yeni
+
+            // Dalgaları çizdir (yeni faz parametreleriyle)
+            drawWave(ctx1, amp1, freq1, phase1Rad, canvas1.width, canvas1.height, 'blue');
+            drawWave(ctx2, amp2, freq2, phase2Rad, canvas2.width, canvas2.height, 'red');
+            drawSuperposition(ctx3, amp1, freq1, phase1Rad, amp2, freq2, phase2Rad, canvas3.width, canvas3.height, 'purple');
+        }
+
+        // Olay Dinleyicileri (Event Listeners)
+        amp1Slider.addEventListener('input', updateWaves);
+        freq1Slider.addEventListener('input', updateWaves);
+        phase1Slider.addEventListener('input', updateWaves); // Yeni
+        amp2Slider.addEventListener('input', updateWaves);
+        freq2Slider.addEventListener('input', updateWaves);
+        phase2Slider.addEventListener('input', updateWaves); // Yeni
+
+        // Başlangıçta çizimi yap
+        updateWaves();
+
+    </script>
+
+</body>
+</html>
