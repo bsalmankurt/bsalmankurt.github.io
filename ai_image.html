@@ -1,0 +1,566 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI Image Enhancer</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <script type="importmap">
+      {
+        "imports": {
+          "@google/genai": "https://esm.run/@google/genai"
+        }
+      }
+    </script>
+    <style>
+      /* Basic Reset & Theming */
+      :root {
+        --background-color: #121212;
+        --surface-color: #1e1e1e;
+        --primary-color: #bb86fc;
+        --primary-variant-color: #3700b3;
+        --secondary-color: #03dac6;
+        --text-color: #e0e0e0;
+        --border-color: #333;
+        --error-color: #cf6679;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica,
+          Arial, sans-serif;
+        background-color: var(--background-color);
+        color: var(--text-color);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 2rem;
+        min-height: 100vh;
+      }
+
+      /* Header */
+      header {
+        text-align: center;
+        margin-bottom: 2rem;
+      }
+
+      header h1 {
+        font-size: 2.5rem;
+        margin-bottom: 0.5rem;
+        color: var(--primary-color);
+      }
+
+      header h1 i {
+          margin-right: 1rem;
+      }
+
+      header p {
+        font-size: 1.1rem;
+        color: #aaa;
+      }
+
+      main {
+          width: 100%;
+          max-width: 1200px;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 2rem;
+      }
+
+      /* Upload Area */
+      .upload-container {
+          width: 100%;
+      }
+      .upload-area {
+        border: 3px dashed var(--border-color);
+        border-radius: 12px;
+        padding: 3rem;
+        text-align: center;
+        cursor: pointer;
+        transition:
+          background-color 0.2s ease,
+          border-color 0.2s ease;
+        background-color: var(--surface-color);
+      }
+
+      .upload-area.drag-over {
+        border-color: var(--primary-color);
+        background-color: rgba(187, 134, 252, 0.1);
+      }
+
+      .upload-area i {
+        font-size: 4rem;
+        color: #666;
+        margin-bottom: 1rem;
+      }
+
+      .upload-area p {
+        font-size: 1.2rem;
+        margin: 0.5rem 0;
+      }
+
+      .upload-hint {
+          font-size: 0.9rem !important;
+          color: #888;
+      }
+
+      .browse-btn {
+          color: var(--primary-color);
+          background: none;
+          border: none;
+          text-decoration: underline;
+          cursor: pointer;
+          font-size: inherit;
+          font-family: inherit;
+      }
+
+      /* Image Comparison */
+      .image-comparison {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+        width: 100%;
+      }
+
+      .image-panel {
+        background-color: var(--surface-color);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        padding: 1rem;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .image-panel h2 {
+          text-align: center;
+          margin-bottom: 1rem;
+          font-weight: 500;
+          color: #ccc;
+      }
+
+      .image-panel img {
+        width: 100%;
+        height: auto;
+        object-fit: contain;
+        border-radius: 8px;
+        min-height: 200px;
+      }
+
+      .enhanced-image-container {
+          position: relative;
+          flex-grow: 1;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background-color: #111;
+          border-radius: 8px;
+      }
+      .enhanced-image-container #enhanced-image {
+          opacity: 1;
+          transition: opacity 0.3s ease;
+      }
+
+      .enhanced-image-container .placeholder {
+          position: absolute;
+          inset: 0;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          color: #888;
+          pointer-events: none;
+      }
+      .enhanced-image-container .placeholder.hidden {
+          display: none;
+      }
+
+      /* Spinner */
+      .spinner {
+        border: 4px solid rgba(255, 255, 255, 0.2);
+        border-left-color: var(--secondary-color);
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        animation: spin 1s linear infinite;
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* Controls */
+      .controls {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+
+      button {
+        background-color: var(--primary-color);
+        color: #000;
+        border: none;
+        border-radius: 8px;
+        padding: 0.8rem 1.5rem;
+        font-size: 1rem;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      button:hover:not(:disabled) {
+        background-color: #d0a3ff;
+      }
+
+      button:disabled {
+        background-color: #444;
+        color: #888;
+        cursor: not-allowed;
+      }
+
+      button.secondary-btn {
+        background-color: var(--surface-color);
+        color: var(--text-color);
+        border: 1px solid var(--border-color);
+      }
+
+      button.secondary-btn:hover:not(:disabled) {
+        background-color: #333;
+      }
+
+
+      /* Error Message */
+      .error-message {
+        color: var(--error-color);
+        background-color: rgba(207, 102, 121, 0.1);
+        border: 1px solid var(--error-color);
+        padding: 1rem;
+        border-radius: 8px;
+        width: 100%;
+        text-align: center;
+      }
+
+      /* Responsive Design */
+      @media (max-width: 768px) {
+        body {
+          padding: 1rem;
+        }
+        header h1 {
+          font-size: 2rem;
+        }
+        .image-comparison {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1><i class="fa-solid fa-sparkles"></i> AI Image Enhancer</h1>
+      <p>Upload an image to improve its quality, resolution, and clarity.</p>
+    </header>
+    <main>
+      <div class="upload-container" id="upload-container">
+        <div id="upload-area" class="upload-area">
+          <i class="fa-solid fa-cloud-arrow-up"></i>
+          <p>
+            <strong>Drag & drop an image here</strong> or
+            <button id="browse-btn" class="browse-btn">browse files</button>
+          </p>
+          <p class="upload-hint">Supports JPEG, PNG, WEBP</p>
+          <input type="file" id="file-input" hidden accept="image/jpeg, image/png, image/webp" />
+        </div>
+      </div>
+
+      <div class="image-comparison" id="image-comparison" style="display: none">
+        <div class="image-panel">
+          <h2>Original</h2>
+          <img id="original-image" src="" alt="Original user-uploaded image." />
+        </div>
+        <div class="image-panel">
+          <h2>Enhanced</h2>
+          <div id="enhanced-image-container" class="enhanced-image-container">
+            <img
+              id="enhanced-image"
+              src=""
+              alt="AI-enhanced version of the image."
+            />
+            <div class="placeholder" id="placeholder">
+              <div class="spinner" id="spinner" style="display: none"></div>
+              <p id="placeholder-text">Your enhanced image will appear here</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="controls" id="controls" style="display: none">
+        <button id="enhance-btn" disabled>
+          <i class="fa-solid fa-wand-magic-sparkles"></i> Enhance Image
+        </button>
+        <button id="download-btn" class="secondary-btn" style="display: none">
+          <i class="fa-solid fa-download"></i> Download Enhanced Image
+        </button>
+         <button id="reset-btn" class="secondary-btn">
+          <i class="fa-solid fa-arrow-rotate-left"></i> Start Over
+        </button>
+      </div>
+      
+      <div id="error-message" class="error-message" style="display: none"></div>
+    </main>
+    <script type="module">
+      /**
+       * @license
+       * SPDX-License-Identifier: Apache-2.0
+       */
+
+      import { GoogleGenAI, Modality, GenerateContentResponse } from "@google/genai";
+
+      // --- DOM Element References ---
+      const uploadContainer = document.getElementById('upload-container');
+      const uploadArea = document.getElementById('upload-area');
+      const fileInput = document.getElementById('file-input');
+      const browseBtn = document.getElementById('browse-btn');
+      const imageComparison = document.getElementById('image-comparison');
+      const originalImage = document.getElementById('original-image');
+      const enhancedImageContainer = document.getElementById('enhanced-image-container');
+      const enhancedImage = document.getElementById('enhanced-image');
+      const placeholder = document.getElementById('placeholder');
+      const placeholderText = document.getElementById('placeholder-text');
+      const spinner = document.getElementById('spinner');
+      const controls = document.getElementById('controls');
+      const enhanceBtn = document.getElementById('enhance-btn');
+      const downloadBtn = document.getElementById('download-btn');
+      const resetBtn = document.getElementById('reset-btn');
+      const errorMessage = document.getElementById('error-message');
+
+      // --- State ---
+      let originalImageFile = null;
+      let originalImageBase64 = null;
+      let enhancedImageBase64 = null;
+
+      // --- Gemini AI Setup ---
+      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+
+      // --- Helper Functions ---
+
+      /**
+       * Converts a File object to a Base64 encoded string.
+       */
+      function fileToBase64(file) {
+          return new Promise((resolve, reject) => {
+              const reader = new FileReader();
+              reader.onload = () => resolve(reader.result);
+              reader.onerror = (error) => reject(error);
+              reader.readAsDataURL(file);
+          });
+      }
+
+      /**
+       * Hides an element.
+       */
+      const hide = (el) => (el.style.display = 'none');
+      /**
+       * Shows an element.
+       */
+      const show = (el, display = 'flex') => (el.style.display = display);
+
+
+      // --- UI Update Functions ---
+
+      /**
+       * Displays an error message to the user.
+       */
+      function displayError(message) {
+          errorMessage.textContent = message;
+          show(errorMessage, 'block');
+          console.error(message);
+      }
+
+      /**
+       * Resets the UI to its initial state.
+       */
+      function resetUI() {
+          originalImageFile = null;
+          originalImageBase64 = null;
+          enhancedImageBase64 = null;
+
+          fileInput.value = ''; // Reset file input
+          show(uploadContainer);
+          hide(imageComparison);
+          hide(controls);
+          hide(errorMessage);
+
+          originalImage.src = '';
+          enhancedImage.src = '';
+          hide(downloadBtn);
+          enhanceBtn.disabled = true;
+          placeholderText.textContent = 'Your enhanced image will appear here';
+          show(placeholder);
+          resetBtn.disabled = false;
+      }
+
+      /**
+       * Sets up the UI after an image is selected.
+       */
+      async function setupImageForEnhancement(file) {
+          resetUI();
+          
+          // Validate file type
+          if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+              displayError('Invalid file type. Please upload a JPEG, PNG, or WEBP image.');
+              return;
+          }
+
+          originalImageFile = file;
+
+          try {
+              originalImageBase64 = await fileToBase64(originalImageFile);
+              originalImage.src = originalImageBase64;
+              
+              hide(uploadContainer);
+              show(imageComparison);
+              show(controls);
+              enhanceBtn.disabled = false;
+
+          } catch (error) {
+              displayError('Could not read the selected file.');
+              resetUI();
+          }
+      }
+
+
+      // --- Core Logic ---
+
+      /**
+       * Calls the Gemini API to enhance the image.
+       */
+      async function enhanceImage() {
+          if (!originalImageFile || !originalImageBase64) {
+              displayError('No image selected for enhancement.');
+              return;
+          }
+
+          // Update UI for loading state
+          enhanceBtn.disabled = true;
+          resetBtn.disabled = true;
+          hide(downloadBtn);
+          hide(placeholderText);
+          show(spinner);
+          hide(errorMessage);
+
+          try {
+              const base64Data = originalImageBase64.split(',')[1];
+              
+              const imagePart = {
+                  inlineData: {
+                      data: base64Data,
+                      mimeType: originalImageFile.type,
+                  },
+              };
+
+              const textPart = {
+                  text: 'Enhance the quality of this image. Improve resolution, sharpness, and clarity without altering the content. Make the colors more vibrant.',
+              };
+
+              const response = await ai.models.generateContent({
+                  model: 'gemini-2.5-flash-image-preview',
+                  contents: { parts: [imagePart, textPart] },
+                  config: {
+                      responseModalities: [Modality.IMAGE, Modality.TEXT],
+                  },
+              });
+
+              // Find the image part in the response
+              const imageResponsePart = response.candidates?.[0]?.content?.parts?.find(
+                  (part) => part.inlineData
+              );
+
+              if (imageResponsePart?.inlineData) {
+                  enhancedImageBase64 = `data:${imageResponsePart.inlineData.mimeType};base64,${imageResponsePart.inlineData.data}`;
+                  enhancedImage.src = enhancedImageBase64;
+                  hide(placeholder);
+                  show(downloadBtn);
+              } else {
+                   throw new Error('No image was generated. The model may have refused the request.');
+              }
+
+          } catch (error) {
+              const message = error instanceof Error ? error.message : 'An unknown error occurred.';
+              displayError(`Failed to enhance image: ${message}`);
+              placeholderText.textContent = 'Enhancement failed. Please try again.';
+              show(placeholderText);
+          } finally {
+              // Restore UI from loading state
+              resetBtn.disabled = false;
+              hide(spinner);
+          }
+      }
+
+      /**
+       * Triggers a download of the enhanced image.
+       */
+      function downloadImage() {
+          if (!enhancedImageBase64) {
+              displayError('No enhanced image to download.');
+              return;
+          }
+          const a = document.createElement('a');
+          a.href = enhancedImageBase64;
+          // Append '-enhanced' to the original filename before the extension
+          const name = originalImageFile.name;
+          const dotIndex = name.lastIndexOf('.');
+          a.download = `${name.substring(0, dotIndex)}-enhanced${name.substring(dotIndex)}`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+      }
+
+
+      // --- Event Listeners ---
+
+      browseBtn.addEventListener('click', () => fileInput.click());
+      fileInput.addEventListener('change', () => {
+          if (fileInput.files && fileInput.files.length > 0) {
+              setupImageForEnhancement(fileInput.files[0]);
+          }
+      });
+
+      uploadArea.addEventListener('click', () => fileInput.click());
+      uploadArea.addEventListener('dragover', (e) => {
+          e.preventDefault();
+          uploadArea.classList.add('drag-over');
+      });
+      uploadArea.addEventListener('dragleave', () => {
+          uploadArea.classList.remove('drag-over');
+      });
+      uploadArea.addEventListener('drop', (e) => {
+          e.preventDefault();
+          uploadArea.classList.remove('drag-over');
+          if (e.dataTransfer?.files && e.dataTransfer.files.length > 0) {
+              setupImageForEnhancement(e.dataTransfer.files[0]);
+          }
+      });
+
+      enhanceBtn.addEventListener('click', enhanceImage);
+      downloadBtn.addEventListener('click', downloadImage);
+      resetBtn.addEventListener('click', resetUI);
+
+      // --- Initial Setup ---
+      resetUI();
+    </script>
+  </body>
+</html>
