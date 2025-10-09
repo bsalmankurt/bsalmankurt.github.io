@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hava Masası Simülasyonu - Sol Panel</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+            font-family: sans-serif;
+            flex-direction: column;
+        }
+        
+        /* YENİ: Ana Konteyner */
+        .main-container {
+            display: flex;
+            flex-direction: row; /* Elemanları yan yana diz */
+            gap: 20px; /* Panel ve canvas arasına boşluk koy */
+            align-items: flex-start; /* Üstten hizala */
+        }
+        
+        /* YENİ: Sol Kontrol Paneli (Sidebar) */
+        .sidebar {
+            display: flex;
+            flex-direction: column; /* Kontrol gruplarını alt alta diz */
+            gap: 15px;
+            width: 250px; /* Panele sabit bir genişlik ver */
+        }
+
+        .controls {
+            padding: 15px;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column; /* Kontrol gruplarını alt alta diz */
+            align-items: stretch; /* İçerideki elemanların genişlemesini sağla */
+            gap: 20px;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column; /* Etiket ve elemanı alt alta koy */
+            align-items: flex-start; /* Sola hizala */
+            gap: 8px;
+        }
+
+        .button-group {
+            display: grid; /* Butonları esnek bir grid yapısına al */
+            grid-template-columns: 1fr 1fr; /* İki sütunlu grid */
+            gap: 10px;
+        }
+        
+        #airHockeyTable {
+            background-color: #ffffff;
+            border: 2px solid #333;
+            cursor: pointer;
+        }
+        #airHockeyTable.measuring {
+            cursor: crosshair;
+        }
+        
+        label {
+            font-weight: bold;
+        }
+        input[type="range"] {
+            width: 100%; /* Panelin genişliğine uysun */
+        }
+        #frequencyValue {
+            font-weight: bold;
+            color: #007BFF;
+            align-self: center; /* Hz yazısını ortala */
+        }
+
+        button {
+            padding: 8px 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #e9e9e9;
+            cursor: pointer;
+            font-weight: bold;
+            user-select: none;
+            width: 100%; /* Grid içinde tam genişlik */
+        }
+        button:hover { background-color: #ddd; }
+        #resetButton { background-color: #ffdddd; }
+        #resetButton:hover { background-color: #ffcccc; }
+        #measureButton.active { background-color: #d4edda; }
+        #sparkButton { background-color: #fff3cd; }
+        #sparkButton:active { background-color: #ffe8a1; }
+
+        .info-panel {
+            padding: 10px 20px;
+            border: 1px solid #ccc;
+            background-color: #fff;
+            border-radius: 8px;
+            min-height: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+        #measureInfo {
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #333;
+            margin: 0;
+        }
+        #measureInfo .result { color: #28a745; }
+
+    </style>
+</head>
+<body>
+
+    <h1>Hava Masası Simülasyonu</h1>
+    
+    <div class="main-container">
+        
+        <div class="sidebar">
+            <div class="controls">
+                <div class="control-group">
+                    <label for="frequencySlider">Nokta Frekansı:</label>
+                    <input type="range" id="frequencySlider" min="1" max="50" value="10">
+                    <span id="frequencyValue">10 Hz</span>
+                </div>
+                <div class="button-group">
+                    <button id="stopStartButton">Durdur</button>
+                    <button id="resetButton">Reset</button>
+                    <button id="measureButton">Mesafe Ölç</button>
+                    <button id="sparkButton">Spark</button>
+                </div>
+            </div>
+            
+            <div class="info-panel">
+                <p id="measureInfo">Mesafe ölçmek için butona tıklayın.</p>
+            </div>
+        </div>
+
+        <canvas id="airHockeyTable" width="800" height="800"></canvas>
+    
+    </div>
+
+    <script>
+        // JAVASCRIPT KODUNDA HİÇBİR DEĞİŞİKLİK YOK
+        // KOD OLDUĞU GİBİ ÇALIŞMAYA DEVAM EDECEKTİR.
+        // --- Değişken Tanımlamaları ---
+        const canvas = document.getElementById('airHockeyTable');
+        const ctx = canvas.getContext('2d');
+        
+        // Kontrol Elemanları
+        const stopStartButton = document.getElementById('stopStartButton');
+        const resetButton = document.getElementById('resetButton');
+        const measureButton = document.getElementById('measureButton');
+        const sparkButton = document.getElementById('sparkButton');
+        const frequencySlider = document.getElementById('frequencySlider');
+        const frequencyValueSpan = document.getElementById('frequencyValue');
+        const measureInfoP = document.getElementById('measureInfo');
+
+        // Sabitler
+        const TABLE_WIDTH_CM = 100;
+        const PIXELS_PER_CM = canvas.width / TABLE_WIDTH_CM;
+
+        // Durum Değişkenleri
+        let puck = { x: canvas.width / 2, y: canvas.height / 2, radius: 20, color: '#007BFF', vx: 0, vy: 0, isDragging: false };
+        let lastMouseX = 0, lastMouseY = 0;
+        let trail = [];
+        let isPaused = false;
+        
+        // Ölçüm Değişkenleri
+        let isMeasuring = false;
+        let measurePoints = [];
+
+        // Spark (İz bırakma) Değişkenleri
+        let sparkInterval;
+        let trailIntervalMilliseconds = 1000 / parseInt(frequencySlider.value);
+
+        // --- OLAY DİNLEYİCİLERİ ---
+        
+        stopStartButton.addEventListener('click', togglePause);
+        resetButton.addEventListener('click', resetSimulation);
+        measureButton.addEventListener('click', startOrResetMeasure);
+        canvas.addEventListener('click', handleMeasureClick);
+        canvas.addEventListener('mousedown', handleMouseDown);
+        canvas.addEventListener('mouseup', handleMouseUp);
+        canvas.addEventListener('mouseout', handleMouseUp);
+        canvas.addEventListener('mousemove', handleMouseMove);
+        frequencySlider.addEventListener('input', updateFrequency);
+        
+        sparkButton.addEventListener('mousedown', startSpark);
+        sparkButton.addEventListener('mouseup', stopSpark);
+        sparkButton.addEventListener('mouseleave', stopSpark);
+
+        // --- Fonksiyonlar ---
+
+        function startSpark() {
+            if (isPaused || puck.isDragging) return;
+            if (sparkInterval) return;
+            sparkInterval = setInterval(() => {
+                if (puck.vx !== 0 || puck.vy !== 0) {
+                    trail.push({ x: puck.x, y: puck.y });
+                    if (trail.length > 100) {
+                        trail.shift();
+                    }
+                }
+            }, trailIntervalMilliseconds);
+        }
+
+        function stopSpark() {
+            clearInterval(sparkInterval);
+            sparkInterval = null;
+        }
+
+        function updateFrequency() {
+            const frequency = parseInt(frequencySlider.value);
+            frequencyValueSpan.textContent = `${frequency} Hz`;
+            trailIntervalMilliseconds = 1000 / frequency;
+            if (sparkInterval) {
+                stopSpark();
+                startSpark();
+            }
+        }
+        
+        function togglePause() {
+            isPaused = !isPaused;
+            if (isPaused) {
+                stopStartButton.textContent = 'Başlat';
+                stopSpark();
+            } else {
+                stopStartButton.textContent = 'Durdur';
+            }
+        }
+
+        function resetSimulation() {
+            cancelMeasure();
+            puck.x = canvas.width / 2; puck.y = canvas.height / 2; puck.vx = 0; puck.vy = 0; puck.isDragging = false;
+            trail = [];
+            stopSpark();
+            isPaused = false;
+            stopStartButton.textContent = 'Durdur';
+            const defaultFrequency = 10;
+            frequencySlider.value = defaultFrequency;
+            frequencyValueSpan.textContent = `${defaultFrequency} Hz`;
+            trailIntervalMilliseconds = 1000 / defaultFrequency;
+        }
+        
+        function handleMouseUp() {
+            if (puck.isDragging) {
+                puck.isDragging = false;
+            }
+        }
+        
+        function startOrResetMeasure() { isMeasuring = true; measurePoints = []; measureButton.textContent = 'Ölçümü İptal Et'; measureButton.classList.add('active'); canvas.classList.add('measuring'); measureInfoP.innerHTML = 'Lütfen başlangıç noktasını seçin.'; }
+        function cancelMeasure() { isMeasuring = false; measurePoints = []; measureButton.textContent = 'Mesafe Ölç'; measureButton.classList.remove('active'); canvas.classList.remove('measuring'); measureInfoP.innerHTML = 'Mesafe ölçmek için butona tıklayın.'; }
+        function handleMeasureClick(e) { if (!isMeasuring) return; const point = getMousePos(e); measurePoints.push(point); if (measurePoints.length === 1) { measureInfoP.innerHTML = 'Lütfen bitiş noktasını seçin.'; } else if (measurePoints.length === 2) { isMeasuring = false; calculateAndDisplayDistance(); measureButton.textContent = 'Yeni Ölçüm'; measureButton.classList.remove('active'); canvas.classList.remove('measuring'); } }
+        function calculateAndDisplayDistance() { const [p1, p2] = measurePoints; const pixelDistance = Math.sqrt((p2.x - p1.x)**2 + (p2.y - p1.y)**2); const cmDistance = pixelDistance / PIXELS_PER_CM; measureInfoP.innerHTML = `Ölçülen Mesafe: <span class="result">${cmDistance.toFixed(2)} cm</span>`; }
+        function handleMouseDown(e) { if (isPaused || isMeasuring) return; const mousePos = getMousePos(e); const distance = Math.sqrt((mousePos.x - puck.x)**2 + (mousePos.y - puck.y)**2); if (distance < puck.radius) { puck.isDragging = true; puck.vx = 0; puck.vy = 0; trail = []; stopSpark(); } }
+        function handleMouseMove(e) { if (puck.isDragging) { const mousePos = getMousePos(e); puck.vx = (mousePos.x - lastMouseX) * 0.8; puck.vy = (mousePos.y - lastMouseY) * 0.8; puck.x = mousePos.x; puck.y = mousePos.y; checkBoundaries(); } const currentMousePos = getMousePos(e); lastMouseX = currentMousePos.x; lastMouseY = currentMousePos.y; }
+        function getMousePos(event) { const rect = canvas.getBoundingClientRect(); return { x: event.clientX - rect.left, y: event.clientY - rect.top }; }
+        function checkBoundaries() { if (puck.x + puck.radius > canvas.width) { puck.x = canvas.width - puck.radius; puck.vx *= -1; } if (puck.x - puck.radius < 0) { puck.x = puck.radius; puck.vx *= -1; } if (puck.y + puck.radius > canvas.height) { puck.y = canvas.height - puck.radius; puck.vy *= -1; } if (puck.y - puck.radius < 0) { puck.y = puck.radius; puck.vy *= -1; } }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#666';
+            trail.forEach(dot => { ctx.beginPath(); ctx.arc(dot.x, dot.y, 3, 0, Math.PI * 2); ctx.fill(); });
+            drawMeasurementVisuals();
+            ctx.beginPath(); ctx.arc(puck.x, puck.y, puck.radius, 0, Math.PI * 2); ctx.fillStyle = puck.color; ctx.fill();
+            ctx.strokeStyle = '#0056b3'; ctx.lineWidth = 2; ctx.stroke(); ctx.closePath();
+        }
+        
+        function drawMeasurementVisuals() { if (measurePoints.length === 0) return; ctx.save(); ctx.strokeStyle = '#dc3545'; ctx.fillStyle = '#dc3545'; ctx.lineWidth = 2; measurePoints.forEach(p => { ctx.beginPath(); ctx.arc(p.x, p.y, 5, 0, Math.PI * 2); ctx.fill(); }); if (measurePoints.length === 2) { const [p1, p2] = measurePoints; ctx.beginPath(); ctx.moveTo(p1.x, p1.y); ctx.lineTo(p2.x, p2.y); ctx.setLineDash([5, 5]); ctx.stroke(); } ctx.restore(); }
+
+        function update() {
+            if (!isPaused) {
+                if (!puck.isDragging) {
+                    puck.x += puck.vx; puck.y += puck.vy;
+                    checkBoundaries();
+                }
+            }
+            draw();
+            requestAnimationFrame(update);
+        }
+        
+        update();
+    </script>
+</body>
+</html>
