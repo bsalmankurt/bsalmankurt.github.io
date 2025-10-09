@@ -5,3 +5,4 @@
 * [John P. Perdew'den Hayata Dair](https://bsalmankurt.github.io/perdew.html)
 * [Kuantum Hesaplama (Bell Durumu)](https://bsalmankurt.github.io/Quantum_bell_state.html)
 * [Girişim](https://bsalmankurt.github.io/interferance.html)
+* [Hava Masası](https://bsalmankurt.github.io/hava_masasi.html)
