@@ -6,3 +6,4 @@
 * [Kuantum Hesaplama (Bell Durumu)](https://bsalmankurt.github.io/Quantum_bell_state.html)
 * [Girişim](https://bsalmankurt.github.io/interferance.html)
 * [Hava Masası](https://bsalmankurt.github.io/hava_masasi.html)
+* [Tork Animasyonu](https://bsalmankurt.github.io/tork.html)
