@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Tork - Standart XY Düzlemi</title>
+    <style>
+        body { margin: 0; overflow: hidden; font-family: 'Segoe UI', Arial, sans-serif; background-color: #ffffff; }
+        
+        #ui-container {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            border-radius: 12px;
+            color: #2c3e50;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            border: 1px solid #ddd;
+            width: 280px;
+            z-index: 100;
+        }
+        h2 { margin: 0 0 15px 0; font-size: 18px; text-align: center; color: #333; border-bottom: 3px solid #e74c3c; padding-bottom: 10px; }
+        .control-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-size: 13px; font-weight: bold; color: #555; }
+        input[type=range] { width: 100%; cursor: pointer; accent-color: #3498db; }
+        .value-display { float: right; font-family: 'Courier New', monospace; font-weight: bold; }
+        
+        .formula-box {
+            background: #f1f3f5;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            margin-top: 15px;
+            border: 1px solid #e0e0e0;
+        }
+        .math { font-size: 18px; font-weight: bold; color: #2c3e50; }
+        #torque-val { font-size: 24px; color: #e74c3c; margin-top: 8px; font-weight: 800; }
+        
+        .legend { margin-top: 15px; font-size: 12px; border-top: 1px dashed #ccc; padding-top: 10px; }
+        .legend-item { display: flex; align-items: center; margin-bottom: 5px; font-weight: 600; }
+        .dot { width: 12px; height: 12px; border-radius: 3px; margin-right: 8px; }
+    </style>
+</head>
+<body>
+
+<div id="ui-container">
+    <h2>Standart Fizik Ekseni</h2>
+    
+    <div class="control-group">
+        <label>Yarıçap Vektörü (r_x): <span id="r-val" class="value-display" style="color:#f39c12">2.0 m</span></label>
+        <input type="range" id="r-slider" min="0.5" max="5" step="0.1" value="2.0">
+    </div>
+
+    <div class="control-group">
+        <label>Kuvvet Vektörü (F_y): <span id="f-val" class="value-display" style="color:#3498db">3.0 N</span></label>
+        <input type="range" id="f-slider" min="-5" max="5" step="0.1" value="3.0">
+    </div>
+
+    <div class="formula-box">
+        <div class="math">τ_z = r_x × F_y</div>
+        <div id="torque-val">6.00 N.m</div>
+    </div>
+
+    <div class="legend">
+        <div class="legend-item"><span class="dot" style="background: #f39c12"></span> X : Çubuk (r)</div>
+        <div class="legend-item"><span class="dot" style="background: #3498db"></span> Y : Kuvvet (F)</div>
+        <div class="legend-item"><span class="dot" style="background: #e74c3c"></span> Z : Tork (τ)</div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+<script>
+    // --- Sahne Kurulumu ---
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0xffffff);
+
+    // Kamera XY düzlemini tam karşıdan görecek şekilde ayarlandı
+    const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camera.position.set(5, 4, 12);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.shadowMap.enabled = true;
+    document.body.appendChild(renderer.domElement);
+
+    const controls = new THREE.OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+
+    // --- Işıklandırma ---
+    scene.add(new THREE.AmbientLight(0xffffff, 0.7));
+    const pointLight = new THREE.PointLight(0xffffff, 0.8);
+    pointLight.position.set(10, 10, 15);
+    scene.add(pointLight);
+
+    // --- Grid (Kareler) XY Düzlemine Taşıma ---
+    const grid = new THREE.GridHelper(20, 20, 0xdddddd, 0xeeeeee);
+    grid.rotation.x = Math.PI / 2; // Izgarayı yataydan dikey (XY) düzleme çevirir
+    scene.add(grid);
+
+    // --- Vektör Yardımcı Fonksiyonu ---
+    function createThickArrow(color) {
+        const group = new THREE.Group();
+        const mat = new THREE.MeshPhongMaterial({ color: color, shininess: 80 });
+        
+        // Gövde
+        const shaft = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 1, 32), mat);
+        shaft.geometry.translate(0, 0.5, 0); 
+        shaft.name = "shaft";
+        group.add(shaft);
+
+        // Uç
+        const head = new THREE.Mesh(new THREE.ConeGeometry(0.22, 0.5, 32), mat);
+        head.name = "head";
+        group.add(head);
+
+        return group;
+    }
+
+    // Pivot
+    const pivot = new THREE.Mesh(new THREE.SphereGeometry(0.25, 32, 32), new THREE.MeshPhongMaterial({color: 0x2c3e50}));
+    scene.add(pivot);
+
+    // Çubuk (X Ekseni - Sarı/Turuncu)
+    const rod = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.08, 0.08, 1, 32),
+        new THREE.MeshPhongMaterial({ color: 0xf39c12 })
+    );
+    rod.rotation.z = -Math.PI / 2; // Sağa doğru uzat
+    scene.add(rod);
+
+    // Kuvvet Oku (Y Ekseni - Mavi)
+    const forceArrow = createThickArrow(0x3498db);
+    scene.add(forceArrow);
+
+    // Tork Oku (Z Ekseni - Kırmızı)
+    const torqueArrow = createThickArrow(0xe74c3c);
+    // Z eksenine bakması için X ekseninde döndür
+    torqueArrow.rotation.x = Math.PI / 2; 
+    scene.add(torqueArrow);
+
+    // --- Etkileşim ---
+    const rSlider = document.getElementById('r-slider');
+    const fSlider = document.getElementById('f-slider');
+
+    function update() {
+        const r = parseFloat(rSlider.value);
+        const f = parseFloat(fSlider.value);
+        const torque = r * f;
+
+        // UI Güncelleme
+        document.getElementById('r-val').innerText = r.toFixed(1) + " m";
+        document.getElementById('f-val').innerText = f.toFixed(1) + " N";
+        document.getElementById('torque-val').innerText = torque.toFixed(2) + " N.m";
+
+        // 1. Çubuğu Güncelle (X boyunca)
+        rod.scale.y = r;
+        rod.position.x = r / 2;
+
+        // 2. Kuvvet Okunu Güncelle (Y boyunca, çubuğun ucunda)
+        const fLen = Math.abs(f) * 0.6;
+        forceArrow.position.set(r, 0, 0);
+        forceArrow.getObjectByName("shaft").scale.y = fLen > 0 ? fLen : 0.001;
+        forceArrow.getObjectByName("head").position.y = fLen;
+        forceArrow.getObjectByName("head").visible = fLen > 0.1;
+        forceArrow.rotation.z = f >= 0 ? 0 : Math.PI;
+
+        // 3. Tork Okunu Güncelle (Z boyunca, merkezde)
+        // Sağ el kuralı: X x Y = Z
+        const tLen = Math.abs(torque) * 0.4;
+        torqueArrow.getObjectByName("shaft").scale.y = tLen > 0 ? tLen : 0.001;
+        torqueArrow.getObjectByName("head").position.y = tLen;
+        torqueArrow.getObjectByName("head").visible = tLen > 0.1;
+        // Tork pozitifse +Z (bize doğru), negatifse -Z (içeri)
+        torqueArrow.rotation.x = torque >= 0 ? Math.PI / 2 : -Math.PI / 2;
+    }
+
+    rSlider.addEventListener('input', update);
+    fSlider.addEventListener('input', update);
+
+    function animate() {
+        requestAnimationFrame(animate);
+        controls.update();
+        renderer.render(scene, camera);
+    }
+
+    window.addEventListener('resize', () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+    update();
+    animate();
+</script>
+</body>
+</html>
