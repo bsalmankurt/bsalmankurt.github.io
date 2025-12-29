@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Vektör Açısı Simülasyonu</title>
+    <style>
+        body { margin: 0; overflow: hidden; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: white; }
+        #ui-container {
+            position: absolute; top: 20px; left: 20px;
+            background: rgba(255, 255, 255, 0.9); padding: 20px;
+            border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            z-index: 10; width: 260px;
+        }
+        h3 { margin-top: 0; color: #333; font-size: 1.1em; border-bottom: 1px solid #ddd; padding-bottom: 5px; }
+        .input-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+        .input-row label { font-weight: bold; font-size: 0.9em; width: 80px; }
+        input { width: 45px; padding: 4px; border: 1px solid #ccc; border-radius: 4px; }
+        .res-box { margin-top: 15px; padding-top: 10px; border-top: 1px solid #eee; font-size: 0.95em; }
+        .color-label { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; }
+    </style>
+</head>
+<body>
+
+<div id="ui-container">
+    <h3>Vektör Kontrol Paneli</h3>
+    <div class="input-row">
+        <label style="color: #d32f2f;"><span class="color-label" style="background:#d32f2f"></span>Vektör A:</label>
+        <input type="number" id="ax" value="3" step="0.5">
+        <input type="number" id="ay" value="2" step="0.5">
+        <input type="number" id="az" value="0" step="0.5">
+    </div>
+    <div class="input-row">
+        <label style="color: #1976d2;"><span class="color-label" style="background:#1976d2"></span>Vektör B:</label>
+        <input type="number" id="bx" value="0" step="0.5">
+        <input type="number" id="by" value="3" step="0.5">
+        <input type="number" id="bz" value="2" step="0.5">
+    </div>
+    <div class="res-box">
+        <div style="color: #388e3c; font-weight: bold;">A × B: <span id="res-val"></span></div>
+        <div style="color: #555; margin-top:5px;">Açı: <span id="angle-val" style="font-weight: bold; color: #000;"></span>°</div>
+    </div>
+</div>
+
+<script type="importmap">
+    {
+        "imports": {
+            "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+            "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+        }
+    }
+</script>
+
+<script type="module">
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+    // Sahne Hazırlığı
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0xffffff);
+
+    const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camera.position.set(10, 10, 12);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(window.devicePixelRatio);
+    document.body.appendChild(renderer.domElement);
+
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+
+    // Işıklar
+    scene.add(new THREE.AmbientLight(0xffffff, 0.7));
+    const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+    dirLight.position.set(5, 15, 10);
+    scene.add(dirLight);
+
+    // Genişletilmiş Izgara ve Eksenler
+    scene.add(new THREE.GridHelper(40, 40, 0xcccccc, 0xeeeeee));
+    scene.add(new THREE.AxesHelper(15));
+
+    let arrowA, arrowB, arrowC, angleArc, angleLabel;
+
+    // --- Yazı Etiketi Oluşturma (Sprite) ---
+    function createTextLabel(text) {
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d');
+        canvas.width = 256; canvas.height = 128;
+        context.font = 'Bold 60px Arial';
+        context.fillStyle = 'rgba(0,0,0,1)';
+        context.textAlign = 'center';
+        context.fillText(text, 128, 64);
+
+        const texture = new THREE.CanvasTexture(canvas);
+        const spriteMaterial = new THREE.SpriteMaterial({ map: texture });
+        const sprite = new THREE.Sprite(spriteMaterial);
+        sprite.scale.set(1.5, 0.75, 1);
+        return sprite;
+    }
+
+    // --- Kalın Vektör Oluşturma ---
+    function createVectorMesh(vec, color) {
+        const group = new THREE.Group();
+        const len = vec.length();
+        if (len < 0.1) return group;
+
+        const shaftRadius = 0.12;
+        const headRadius = 0.3;
+        const headLen = 0.6;
+
+        const mat = new THREE.MeshPhongMaterial({ color: color });
+        const shaft = new THREE.Mesh(new THREE.CylinderGeometry(shaftRadius, shaftRadius, len - headLen, 16), mat);
+        shaft.position.y = (len - headLen) / 2;
+        
+        const head = new THREE.Mesh(new THREE.ConeGeometry(headRadius, headLen, 16), mat);
+        head.position.y = len - (headLen / 2);
+
+        group.add(shaft, head);
+        group.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), vec.clone().normalize());
+        return group;
+    }
+
+    function updateScene() {
+        // Temizlik
+        if (arrowA) scene.remove(arrowA);
+        if (arrowB) scene.remove(arrowB);
+        if (arrowC) scene.remove(arrowC);
+        if (angleArc) scene.remove(angleArc);
+        if (angleLabel) scene.remove(angleLabel);
+
+        const vA = new THREE.Vector3(
+            parseFloat(document.getElementById('ax').value) || 0,
+            parseFloat(document.getElementById('ay').value) || 0,
+            parseFloat(document.getElementById('az').value) || 0
+        );
+        const vB = new THREE.Vector3(
+            parseFloat(document.getElementById('bx').value) || 0,
+            parseFloat(document.getElementById('by').value) || 0,
+            parseFloat(document.getElementById('bz').value) || 0
+        );
+
+        const vC = new THREE.Vector3().crossVectors(vA, vB);
+
+        // Vektörleri Çiz
+        arrowA = createVectorMesh(vA, 0xd32f2f);
+        arrowB = createVectorMesh(vB, 0x1976d2);
+        arrowC = createVectorMesh(vC, 0x388e3c);
+        scene.add(arrowA, arrowB, arrowC);
+
+        // --- Açı ve Yay Hesabı ---
+        const angleRad = vA.angleTo(vB);
+        const angleDeg = (angleRad * 180) / Math.PI;
+
+        if (angleDeg > 0.1 && angleDeg < 179.9) {
+            // Yay (Arc) oluşturma
+            const radius = Math.min(vA.length(), vB.length()) * 0.4;
+            const curve = new THREE.EllipseCurve(0, 0, radius, radius, 0, angleRad, false, 0);
+            const points = curve.getPoints(50);
+            const arcGeom = new THREE.BufferGeometry().setFromPoints(points);
+            const arcMat = new THREE.LineBasicMaterial({ color: 0x000000, linewidth: 2 });
+            angleArc = new THREE.Line(arcGeom, arcMat);
+
+            // Yayı A ve B'nin düzlemine oturtma
+            const normal = new THREE.Vector3().crossVectors(vA, vB).normalize();
+            const axisX = vA.clone().normalize();
+            const axisY = new THREE.Vector3().crossVectors(normal, axisX).normalize();
+            const matrix = new THREE.Matrix4().makeBasis(axisX, axisY, normal);
+            angleArc.applyMatrix4(matrix);
+            scene.add(angleArc);
+
+            // Açı Etiketi (Sprite)
+            angleLabel = createTextLabel(`${angleDeg.toFixed(1)}°`);
+            const midAngle = angleRad / 2;
+            const labelPos = new THREE.Vector3().addScaledVector(axisX, Math.cos(midAngle)).addScaledVector(axisY, Math.sin(midAngle)).multiplyScalar(radius + 0.8);
+            angleLabel.position.copy(labelPos);
+            scene.add(angleLabel);
+        }
+
+        // UI Güncelle
+        document.getElementById('res-val').innerText = `(${vC.x.toFixed(1)}, ${vC.y.toFixed(1)}, ${vC.z.toFixed(1)})`;
+        document.getElementById('angle-val').innerText = angleDeg.toFixed(1);
+    }
+
+    document.querySelectorAll('input').forEach(i => i.addEventListener('input', updateScene));
+    updateScene();
+
+    function animate() {
+        requestAnimationFrame(animate);
+        controls.update();
+        renderer.render(scene, camera);
+    }
+    animate();
+
+    window.addEventListener('resize', () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+</script>
+</body>
+</html>
