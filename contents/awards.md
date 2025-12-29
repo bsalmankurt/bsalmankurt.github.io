@@ -7,3 +7,4 @@
 * [Girişim](https://bsalmankurt.github.io/interferance.html)
 * [Hava Masası](https://bsalmankurt.github.io/hava_masasi.html)
 * [Tork Animasyonu](https://bsalmankurt.github.io/tork.html)
+* [Vektörel Çarpım Animasyonu](https://bsalmankurt.github.io/vektorel_carpim.html)
